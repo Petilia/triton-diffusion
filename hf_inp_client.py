@@ -1,5 +1,6 @@
 import argparse
 import base64
+import time
 from io import BytesIO
 
 import numpy as np
@@ -27,15 +28,14 @@ def main(model_name):
     client = httpclient.InferenceServerClient(url="localhost:8000")
 
     # Inputs
-    image = Image.open("./test_images/2_trees.jpg")
+    # image = Image.open("./test_images/2_trees.jpg")
+    # mask = Image.open("test_images/2_trees.png")
+    image = Image.open("./test_images/cat.jpg")
+    mask = Image.open("test_images/cat.png")
     prompt = "robot"
-    mask = Image.open("test_images/2_trees.png")
 
     image = encode_image(image).decode("utf8")
     mask = encode_image(mask).decode("utf8")
-
-    # image = np.asarray([str.encode(image)])
-    # mask = np.asarray([str.encode(mask)])
 
     image = np.asarray([image], dtype=object)
     mask = np.asarray([mask], dtype=object)
@@ -56,12 +56,46 @@ def main(model_name):
     outputs = [httpclient.InferRequestedOutput("generated_image")]
 
     # Query
+    t1 = time.perf_counter()
     query_response = client.infer(
         model_name=model_name, inputs=input_tensors, outputs=outputs
     )
 
+    print(time.perf_counter() - t1)
+    
     # Output
-    # generated_image = query_response.as_numpy("generated_image")
+    generated_image = query_response.as_numpy("generated_image")
+
+    # print(type(generated_image), generated_image[0])
+    decoded_images = []
+
+    for encoded_image in generated_image:
+        # Декодируйте строку base64 обратно в байты
+        image_data = base64.b64decode(encoded_image)
+
+        # Создайте объект BytesIO для считывания байтов
+        image_buffer = BytesIO(image_data)
+
+        # Откройте изображение с использованием PIL
+        img = Image.open(image_buffer)
+        img.save("./test_images/output.jpeg")
+
+        # Добавьте изображение в список раскодированных изображений
+        decoded_images.append(img)
+
+    # img = Image.frombuffer(generated_image[0])
+
+    # images = [decode_image(i) for i in generated_image]
+    # images = decode_image(generated_image[0])
+    # if generated_image.ndim == 3:
+    #     generated_image = generated_image[None, ...]
+
+    # generated_image = (generated_image * 255).round().astype("uint8")
+    # pil_images = [Image.fromarray(image) for image in images]
+
+    # im = Image.fromarray(generated_image)
+    # im.save("./test_images/output.jpeg")
+
     # print(generated_image.shape)
 
 
