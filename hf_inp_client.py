@@ -68,20 +68,35 @@ def main(model_name):
 
     # print(type(generated_image), generated_image[0])
     decoded_images = []
+    
+    encoded_image = generated_image[0]
+    
+    image_data = base64.b64decode(encoded_image)
 
-    for encoded_image in generated_image:
-        # Декодируйте строку base64 обратно в байты
-        image_data = base64.b64decode(encoded_image)
+    # Создайте объект BytesIO для считывания байтов
+    image_buffer = BytesIO(image_data)
 
-        # Создайте объект BytesIO для считывания байтов
-        image_buffer = BytesIO(image_data)
+    # Откройте изображение с использованием PIL
+    img = Image.open(image_buffer)
+    img.save("./test_images/output.jpeg")
 
-        # Откройте изображение с использованием PIL
-        img = Image.open(image_buffer)
-        img.save("./test_images/output.jpeg")
+    # Добавьте изображение в список раскодированных изображений
+    decoded_images.append(img)
+    
 
-        # Добавьте изображение в список раскодированных изображений
-        decoded_images.append(img)
+    # for encoded_image in generated_image:
+    #     # Декодируйте строку base64 обратно в байты
+    #     image_data = base64.b64decode(encoded_image)
+
+    #     # Создайте объект BytesIO для считывания байтов
+    #     image_buffer = BytesIO(image_data)
+
+    #     # Откройте изображение с использованием PIL
+    #     img = Image.open(image_buffer)
+    #     img.save("./test_images/output.jpeg")
+
+    #     # Добавьте изображение в список раскодированных изображений
+    #     decoded_images.append(img)
 
     # img = Image.frombuffer(generated_image[0])
 
